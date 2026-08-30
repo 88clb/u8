@@ -3,43 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>URL Accessibility Check</title>
-    <meta name="robots" content="noindex,nofollow">
+
+    <title>URL Check</title>
+
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex, notranslate, max-snippet:0, max-image-preview:none, max-video-preview:0">
+    <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+    <meta name="bingbot" content="noindex, nofollow">
+
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            overflow: hidden;
-        }
-        #loadingImage {
-            position: fixed;
-            top: 0;
-            left: 0;
+        html,
+        body {
             width: 100%;
             height: 100%;
-            object-fit: cover;
-            z-index: 999;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #f1fbf8;
+            background-image:
+                radial-gradient(
+                    circle at 12% 12%,
+                    rgba(165, 222, 203, 0.7) 0%,
+                    rgba(165, 222, 203, 0) 42%
+                ),
+                linear-gradient(
+                    145deg,
+                    #e4f9f1 0%,
+                    #f5fbfc 62%,
+                    #d9f5ea 100%
+                );
         }
-        #testFrame {
-            display: none;
+
+        #status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            color: #008878;
+            text-align: center;
+        }
+
+        .loader {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .progress-wrap {
+            position: relative;
+            width: min(260px, 70vw);
+            height: min(260px, 70vw);
+        }
+
+        @media (max-width: 768px) {
+            .progress-wrap {
+                width: 200px;
+                height: 200px;
+            }
+        }
+
+        .progress-ring {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+            filter: drop-shadow(
+                0 12px 26px rgba(15, 169, 155, 0.18)
+            );
+        }
+
+        .progress-ring-bg,
+        .progress-ring-value {
+            fill: none;
+            stroke-width: 16;
+        }
+
+        .progress-ring-bg {
+            stroke: #ade8d7;
+        }
+
+        .progress-ring-value {
+            stroke: url(#freshGreenGradient);
+            stroke-linecap: round;
+            stroke-dasharray: 703.72;
+            stroke-dashoffset: 654.46;
+            transition: stroke-dashoffset 0.35s ease;
+        }
+
+        #progressText {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .progress-ring-value {
+                transition: none;
+            }
         }
     </style>
 </head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-N1979XNCGW"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-N1979XNCGW');
-</script>
 
 <body>
 
-    <img id="loadingImage" src="start_page.png" alt="Loading...">
+    <div id="status" role="status" aria-live="polite" aria-label="Connecting">
+        <div class="loader">
+            <div class="progress-wrap">
+                <svg class="progress-ring" viewBox="0 0 260 260" aria-hidden="true">
+                    <defs>
+                        <linearGradient id="freshGreenGradient" x1="100%" y1="0%" x2="0%" y2="0%">
+                            <stop offset="0%" stop-color="#0fa99b"></stop>
+                            <stop offset="50%" stop-color="#3cc9a8"></stop>
+                            <stop offset="100%" stop-color="#72e3ac"></stop>
+                        </linearGradient>
+                    </defs>
+                    <circle class="progress-ring-bg" cx="130" cy="130" r="112"></circle>
+                    <circle id="progressCircle" class="progress-ring-value" cx="130" cy="130" r="112"></circle>
+                </svg>
+                <div id="progressText">7%</div>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Block known crawlers / scraper bots before running any redirect logic.
+        // Not a hard security boundary (a determined scraper can spoof UA and
+        // fake navigator.webdriver) - this only stops well-known bots and
+        // basic headless setups from reading the mirror list or following it.
+        function isLikelyBot() {
+            const ua = navigator.userAgent || "";
+
+            const botPattern = new RegExp(
+                [
+                    "bot", "spider", "crawl", "slurp", "curl", "wget",
+                    "python-requests", "scrapy", "headless", "phantom",
+                    "puppeteer", "playwright", "selenium",
+                    "googlebot", "bingbot", "yandex", "baiduspider",
+                    "duckduckbot", "facebookexternalhit", "ahrefsbot",
+                    "semrushbot", "mj12bot", "dotbot", "petalbot"
+                ].join("|"),
+                "i"
+            );
+
+            if (botPattern.test(ua)) {
+                return true;
+            }
+
+            if (navigator.webdriver) {
+                return true;
+            }
+
+            return false;
+        }
+
+        if (isLikelyBot()) {
+            // Stop here: no redirect, no mirror URLs exposed to the bot.
+            throw new Error("Automated client detected, aborting.");
+        }
+
         const urls = [
             "https://u888i.click?f=2551606&app=1",
             "https://u888i.cool?f=2551606&app=1",
@@ -54,18 +180,185 @@
             "https://u855.online?f=2551606&app=1"
         ];
 
-        const loadingImage = document.getElementById('loadingImage');
+        // Number of URLs checked per batch
+        const batchSize = 2;
 
-        function getRandomUrl() {
-          const randomIndex = Math.floor(Math.random() * urls.length);
-          const selectedUrl = urls[randomIndex];
-          return selectedUrl;
+        // Max wait time per URL (ms)
+        const checkTimeout = 3000;
+
+        // Circular loading progress
+        const progressCircle = document.getElementById("progressCircle");
+        const progressText = document.getElementById("progressText");
+        const progressCircumference = 2 * Math.PI * 112;
+        let currentProgress = 7;
+
+        function setProgress(value) {
+            currentProgress = Math.max(
+                currentProgress,
+                Math.min(100, Math.round(value))
+            );
+
+            const offset = progressCircumference *
+                (1 - currentProgress / 100);
+
+            progressCircle.style.strokeDashoffset = offset;
+            progressText.textContent = `${currentProgress}%`;
         }
-        const randomUrl = getRandomUrl();
-        loadingImage.style.display = 'none';
-        window.location.href = randomUrl;
-        
+
+        setProgress(7);
+
+        // Preserve current path, query params, and hash
+        const pathAfterDomain =
+            window.location.pathname +
+            window.location.search +
+            window.location.hash;
+
+        // Randomly shuffle all URLs
+        function shuffleUrls(list) {
+            const result = [...list];
+
+            for (let i = result.length - 1; i > 0; i--) {
+                const randomIndex = Math.floor(
+                    Math.random() * (i + 1)
+                );
+
+                [result[i], result[randomIndex]] =
+                    [result[randomIndex], result[i]];
+            }
+
+            return result;
+        }
+
+        // Check a single URL
+        function checkUrl(url, controller) {
+            return new Promise((resolve, reject) => {
+                const timer = setTimeout(() => {
+                    controller.abort();
+
+                    reject(new Error("Connect Timeout"));
+                }, checkTimeout);
+
+                fetch(url, {
+                    method: "GET",
+                    mode: "no-cors",
+                    cache: "no-store",
+                    signal: controller.signal
+                })
+                .then(() => {
+                    clearTimeout(timer);
+
+                    resolve(url);
+                })
+                .catch(error => {
+                    clearTimeout(timer);
+
+                    reject(error);
+                });
+            });
+        }
+
+        async function checkAndRedirect() {
+            const shuffledUrls = shuffleUrls(urls);
+
+            const totalBatches = Math.ceil(
+                shuffledUrls.length / batchSize
+            );
+
+            // Smoothly advance progress based on the longest possible
+            // check time, capped at 95% until checking is complete
+            const progressStartedAt = Date.now();
+            const maximumCheckTime =
+                totalBatches * checkTimeout;
+
+            const progressTimer = setInterval(() => {
+                const elapsed = Date.now() - progressStartedAt;
+                const estimatedProgress = 7 +
+                    (elapsed / maximumCheckTime) * 88;
+
+                setProgress(Math.min(95, estimatedProgress));
+            }, 120);
+
+            // Take URLs in order, batchSize at a time
+            for (
+                let index = 0;
+                index < shuffledUrls.length;
+                index += batchSize
+            ) {
+                const currentBatch = shuffledUrls.slice(
+                    index,
+                    index + batchSize
+                );
+
+                const currentBatchNumber =
+                    Math.floor(index / batchSize) + 1;
+
+                // Create a controller for each URL in this batch
+                const controllers = currentBatch.map(
+                    () => new AbortController()
+                );
+
+                try {
+                    // Use whichever URL in this batch succeeds first
+                    const availableUrl = await Promise.any(
+                        currentBatch.map((url, batchIndex) => {
+                            return checkUrl(
+                                url,
+                                controllers[batchIndex]
+                            );
+                        })
+                    );
+
+                    // Stop the remaining checks in this batch
+                    controllers.forEach(controller => {
+                        controller.abort();
+                    });
+
+                    clearInterval(progressTimer);
+                    setProgress(100);
+
+                    // Redirect immediately on success
+                    window.location.replace(
+                        availableUrl + pathAfterDomain
+                    );
+
+                    return;
+                } catch (error) {
+                    // Make sure all requests in this batch are stopped
+                    controllers.forEach(controller => {
+                        controller.abort();
+                    });
+
+                    const checkedProgress = 7 +
+                        (currentBatchNumber / totalBatches) * 88;
+
+                    setProgress(Math.min(95, checkedProgress));
+                }
+            }
+            // All URLs failed, pick one at random and redirect anyway
+            const randomIndex = Math.floor(
+                Math.random() * urls.length
+            );
+
+            const fallbackUrl = urls[randomIndex]
+                .replace(/\/+$/, "");
+
+            clearInterval(progressTimer);
+            setProgress(100);
+
+            // Redirect immediately to the random fallback
+            window.location.replace(
+                fallbackUrl + pathAfterDomain
+            );
+
+            return;
+        }
+
+        checkAndRedirect();
     </script>
+
+    <noscript>
+        <meta http-equiv="refresh" content="0;url=https://u888i.click?f=2551606&app=1">
+    </noscript>
 
 </body>
 </html>
